@@ -182,9 +182,9 @@ parameters to the code block.")
   "Execute the SQL statements in BODY using PARAMS."
   (let* ((processed-params (org-babel-process-params params))
          (session (org-babel-sql-mode-initiate-session processed-params))
-         (vars (second processed-params))
-         (result-params (third processed-params))
-         (result-type (fourth processed-params))
+         (vars (cl-second processed-params))
+         (result-params (cl-third processed-params))
+         (result-type (cl-fourth processed-params))
          (statements
           (mapcar (lambda (c) (format "%s;" c))
                   (split-string
