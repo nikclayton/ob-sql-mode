@@ -45,6 +45,12 @@ or by using [`use-package`](https://github.com/jwiegley/use-package):
   :ensure t)
 ```
 
+After installing, enable with:
+
+``` lisp
+(require 'ob-sql-mode)
+```
+
 To guard against security risks, Org defaults to prompting for
 confirmation every time you evaluate a code block
 (see
