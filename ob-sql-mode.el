@@ -3,6 +3,10 @@
 ;; Copyright (C) 2016 Free Software Foundation, Inc.
 
 ;; Author: Nik Clayton nik@google.com
+;; URL: http://github.com/nikclayton/ob-sql-mode
+;; Version: 1.0
+;; Package-Requires: ((emacs "24.3"))
+;; Keywords: languages, org, org-babel, sql
 
 ;; This file is part of GNU Emacs.
 
@@ -175,6 +179,7 @@ parameters to the code block.")
 
 
 (defun org-babel-execute:sql-mode (body params)
+  "Execute the SQL statements in BODY using PARAMS."
   (let* ((processed-params (org-babel-process-params params))
          (session (org-babel-sql-mode-initiate-session processed-params))
          (vars (second processed-params))
