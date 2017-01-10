@@ -150,11 +150,8 @@
   :safe t
   :type 'string)
 
-(defcustom org-babel-default-header-args:sql-mode
-  '((:product . "ansi"))
-  "Default header args."
-  :group 'org-babel
-  :safe t)
+(defvar org-babel-default-header-args:sql-mode nil
+  "Sql mode specific header args.")
 
 (defvar org-babel-header-args:sql-mode
   '((:product . :any)
@@ -177,6 +174,9 @@ parameters to the code block.")
                     "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"
                     "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"))))
 
+(defun org-babel-sql-mode-as-symbol (string-or-symbol)
+  "If STRING-OR-SYMBOL is already a symbol, return it.  Otherwise convert it to a symbol and return that."
+  (if (symbolp string-or-symbol) string-or-symbol (intern string-or-symbol)))
 
 (defun org-babel-execute:sql-mode (body params)
   "Execute the SQL statements in BODY using PARAMS."
@@ -208,34 +208,18 @@ parameters to the code block.")
   "Return the comint buffer for this session.
 
 Determines the buffer from values in PROCESSED-PARAMS."
-  (let* ((bufname (org-babel-sql-mode--buffer-name processed-params))
-         (sql-bufname (format "*SQL: %s*" bufname))
-         (buf (get-buffer sql-bufname))
-         (product (intern (cdr (assoc :product processed-params)))))
-    (unless (assoc product sql-product-alist)
-      (user-error "Product `%s' is not in `sql-product-alist'" product))
-    (save-current-buffer
-      (unless (sql-buffer-live-p buf product)
-        (if (y-or-n-p (format "Interpreter not running in %s.  Start it? "
-                              sql-bufname))
-            ;; Temporarily redefine pop-to-buffer to do nothing, so
-            ;; that when sql-product-interactive calls it nothing
-            ;; happens.  Otherwise the frame is split to show the
-            ;; interactive buffer, which is not wanted.
-            (let ((old-pop-to-buffer (symbol-function 'pop-to-buffer)))
-              (fset 'pop-to-buffer #'(lambda (&rest _r)))
-              (sql-product-interactive product bufname)
-              (fset 'pop-to-buffer old-pop-to-buffer))
-          (user-error "Can't do anything without an SQL interactive buffer")))
-      (get-buffer sql-bufname))))
-
-(defun org-babel-sql-mode--buffer-name (processed-params)
-  "Return a buffer name to use for the session.
-
-The buffer name is (currently) derived from the :product and :session
-keys in PROCESSED-PARAMS, but do not depend on this."
-  (format "%s:%s" (cdr (assoc :product processed-params))
-          (cdr (assoc :session processed-params))))
+  (let* ((sql-product (org-babel-sql-mode-as-symbol (cdr (assoc :product processed-params))))
+         (default-buffer (sql-find-sqli-buffer)))
+    (if (sql-buffer-live-p default-buffer)
+        default-buffer
+      (if (y-or-n-p (format "Interpreter not running.  Start it? "))
+          ;; Temporarily redefine `pop-to-buffer' to do nothing, so that when
+          ;; `sql-product-interactive' calls it nothing happens.  Otherwise the
+          ;; frame is split to show the interactive buffer, which is not wanted.
+          (cl-letf (((symbol-function #'pop-to-buffer) (lambda (&rest _))))
+            ;; '(4) means C-u to prompt for product
+            (sql-product-interactive (if sql-product sql-product '(4))))
+        (user-error "Can't do anything without an SQL interactive buffer")))))
 
 (provide 'ob-sql-mode)
 ;;; ob-sql-mode.el ends here
