@@ -5,7 +5,7 @@
 ;; Author: Nik Clayton nik@google.com
 ;; URL: http://github.com/nikclayton/ob-sql-mode
 ;; Version: 1.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: languages, org, org-babel, sql
 
 ;; This file is part of GNU Emacs.
@@ -139,6 +139,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'subr-x)
 (require 'ob)
 (require 'org)
 (require 'sql)
@@ -185,14 +186,13 @@ parameters to the code block.")
          (statements
           (mapcar (lambda (c) (format "%s;" c))
                   (split-string
-                   (replace-regexp-in-string
-                    "[[:space:]\n\r]+\\'" ""
+                   (string-trim-right
                     ;; Replace newlines with spaces
                     (replace-regexp-in-string
                      "\n" " "
                      ;; Remove comments, as the query is going to be
                      ;; flattened to one line.
-                     (replace-regexp-in-string " --.*\n" "" body)))
+                     (replace-regexp-in-string "^[[:space:]]*--.*$" "" body)))
                    ";" t "[[:space:]\r\n]+"))))
     (with-temp-buffer
       (let ((adjusted-statements (run-hook-with-args-until-success
