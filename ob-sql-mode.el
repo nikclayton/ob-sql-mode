@@ -200,6 +200,7 @@ parameters to the code block.")
                                   statements processed-params)))
         (when adjusted-statements
           (setq statements adjusted-statements)))
+      (setq statements (string-join statements))
       (sql-redirect session statements (buffer-name) nil)
       (run-hooks 'org-babel-sql-mode-post-execute-hook)
       (buffer-string))))
