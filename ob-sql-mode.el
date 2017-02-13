@@ -182,9 +182,6 @@ parameters to the code block.")
   "Execute the SQL statements in BODY using PARAMS."
   (let* ((processed-params (org-babel-process-params params))
          (session (org-babel-sql-mode-initiate-session processed-params))
-         (vars (cl-second processed-params))
-         (result-params (cl-third processed-params))
-         (result-type (cl-fourth processed-params))
          (statements
           (mapcar (lambda (c) (format "%s;" c))
                   (split-string
@@ -226,7 +223,7 @@ Determines the buffer from values in PROCESSED-PARAMS."
             ;; happens.  Otherwise the frame is split to show the
             ;; interactive buffer, which is not wanted.
             (let ((old-pop-to-buffer (symbol-function 'pop-to-buffer)))
-              (fset 'pop-to-buffer #'(lambda (&rest r)))
+              (fset 'pop-to-buffer #'(lambda (&rest _r)))
               (sql-product-interactive product bufname)
               (fset 'pop-to-buffer old-pop-to-buffer))
           (user-error "Can't do anything without an SQL interactive buffer")))
