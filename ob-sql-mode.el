@@ -181,7 +181,8 @@ parameters to the code block.")
 (defun org-babel-execute:sql-mode (body params)
   "Execute the SQL statements in BODY using PARAMS."
   (let* ((processed-params (org-babel-process-params params))
-         (session (org-babel-sql-mode-initiate-session processed-params))
+         (session (cdr (assoc :session processed-params)))
+         (session-proc (org-babel-sql-mode-initiate-session session processed-params))
          (statements
           (mapcar (lambda (c) (format "%s;" c))
                   (split-string
@@ -200,18 +201,18 @@ parameters to the code block.")
                                   statements processed-params)))
         (when adjusted-statements
           (setq statements adjusted-statements)))
-      (sql-redirect session statements (buffer-name) nil)
+      (sql-redirect session-proc statements (buffer-name) nil)
       (run-hooks 'org-babel-sql-mode-post-execute-hook)
       (buffer-string))))
 
-(defun org-babel-sql-mode-initiate-session (processed-params)
-  "Return the comint buffer for this session.
+(defun org-babel-sql-mode-initiate-session (&optional session _params)
+  "Return the comint buffer for this `SESSION'.
 
-Determines the buffer from values in PROCESSED-PARAMS."
-  (let* ((bufname (org-babel-sql-mode--buffer-name processed-params))
+Determines the buffer from values in `PARAMS'."
+  (let* ((bufname (org-babel-sql-mode--buffer-name _params))
          (sql-bufname (format "*SQL: %s*" bufname))
          (buf (get-buffer sql-bufname))
-         (product (intern (cdr (assoc :product processed-params)))))
+         (product (intern (cdr (assoc :product _params)))))
     (unless (assoc product sql-product-alist)
       (user-error "Product `%s' is not in `sql-product-alist'" product))
     (save-current-buffer
@@ -229,13 +230,13 @@ Determines the buffer from values in PROCESSED-PARAMS."
           (user-error "Can't do anything without an SQL interactive buffer")))
       (get-buffer sql-bufname))))
 
-(defun org-babel-sql-mode--buffer-name (processed-params)
-  "Return a buffer name to use for the session.
+(defun org-babel-sql-mode--buffer-name (params)
+  "Return a buffer name to use for the `SESSION'.
 
 The buffer name is (currently) derived from the :product and :session
-keys in PROCESSED-PARAMS, but do not depend on this."
-  (format "%s:%s" (cdr (assoc :product processed-params))
-          (cdr (assoc :session processed-params))))
+keys in `PARAMS', but do not depend on this."
+  (format "%s:%s" (cdr (assoc :product params))
+          (cdr (assoc :session params))))
 
 (provide 'ob-sql-mode)
 ;;; ob-sql-mode.el ends here
