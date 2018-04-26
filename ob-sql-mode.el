@@ -5,7 +5,7 @@
 ;; Author: Nik Clayton nik@google.com
 ;; URL: http://github.com/nikclayton/ob-sql-mode
 ;; Version: 1.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: languages, org, org-babel, sql
 
 ;; This file is part of GNU Emacs.
@@ -139,9 +139,21 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'subr-x)
 (require 'ob)
 (require 'org)
 (require 'sql)
+
+(defcustom org-babel-sql-mode-start-interpreter-prompt
+  (lambda (bufname buf product)
+    (y-or-n-p (format "Interpreter not running in %s.  Start it? " bufname)))
+  "Function to call if the buffer BUF called BUFNAME is not running PRODUCT.
+
+If the function returns t then a buffer will be created, otherwise the
+session will not be started."
+  :group 'org-babel
+  :safe t
+  :type 'function)
 
 (defcustom org-babel-sql-mode-template-selector
   "Q"
@@ -188,14 +200,13 @@ parameters to the code block.")
          (statements
           (mapcar (lambda (c) (format "%s;" c))
                   (split-string
-                   (replace-regexp-in-string
-                    "[[:space:]\n\r]+\\'" ""
+		   (string-trim-right
                     ;; Replace newlines with spaces
                     (replace-regexp-in-string
                      "\n" " "
                      ;; Remove comments, as the query is going to be
                      ;; flattened to one line.
-                     (replace-regexp-in-string " --.*\n" "" body)))
+                     (replace-regexp-in-string "[[:space:]]*--.*$" "" body)))
                    ";" t "[[:space:]\r\n]+"))))
     (with-temp-buffer
       (let ((adjusted-statements (run-hook-with-args-until-success
@@ -203,6 +214,7 @@ parameters to the code block.")
                                   statements processed-params)))
         (when adjusted-statements
           (setq statements adjusted-statements)))
+      (setq statements (string-join statements))
       (sql-redirect session statements (buffer-name) nil)
       (run-hooks 'org-babel-sql-mode-post-execute-hook)
       (buffer-string))))
@@ -219,8 +231,8 @@ Determines the buffer from values in PROCESSED-PARAMS."
       (user-error "Product `%s' is not in `sql-product-alist'" product))
     (save-current-buffer
       (unless (sql-buffer-live-p buf product)
-        (if (y-or-n-p (format "Interpreter not running in %s.  Start it? "
-                              sql-bufname))
+        (if (funcall org-babel-sql-mode-start-interpreter-prompt
+		     sql-bufname buf product )
             ;; Temporarily redefine pop-to-buffer to do nothing, so
             ;; that when sql-product-interactive calls it nothing
             ;; happens.  Otherwise the frame is split to show the
