@@ -4,7 +4,7 @@
 
 ;; Author: Nik Clayton nik@google.com
 ;; URL: http://github.com/nikclayton/ob-sql-mode
-;; Version: 1.0
+;; Version: 1.1
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: languages, org, org-babel, sql
 
