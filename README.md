@@ -15,6 +15,8 @@ Some familiarity with `sql-mode` is assumed.
 
 ## Installation
 
+[![MELPA](https://melpa.org/packages/ob-sql-mode-badge.svg)](https://melpa.org/#/ob-sql-mode)
+
 `ob-sql-mode` is available on [MELPA](https://melpa.org/). If you are
 not already using MELPA, add this to your `.emacs` (or equivalent):
 
