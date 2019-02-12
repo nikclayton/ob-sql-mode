@@ -107,8 +107,8 @@ the Org manual you can set these on a per-file level with the
 following syntax:
 
 ``` org
-#+PROPERTY: :header-args:sql-mode :product sqlite
-#+PROPERTY: :header-args:sql-mode+ :session session-name
+#+PROPERTY: header-args:sql-mode :product sqlite
+#+PROPERTY: header-args:sql-mode+ :session session-name
 ```
 
 Or you can apply them to all blocks below a particular heading by adding

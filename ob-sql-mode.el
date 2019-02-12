@@ -52,8 +52,8 @@
 ;; Using Org property syntax you can set these on a per-file level with
 ;; a line like:
 ;;
-;;     #+PROPERTY: :header-args:sql-mode :product sqlite
-;;     #+PROPERTY: :header-args:sql-mode+ :session mysession
+;;     #+PROPERTY: header-args:sql-mode :product sqlite
+;;     #+PROPERTY: header-args:sql-mode+ :session mysession
 ;;
 ;; Or in a per-heading property drawer
 ;;
