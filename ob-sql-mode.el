@@ -175,9 +175,11 @@ session will not be started."
 (defvar org-babel-sql-mode-pre-execute-hook nil
   "Hook for functions to be called before the query is executed.
 
-Each function is called with two parameters, STATEMENTS is a list
-of the SQL statements to be run.  PROCESSED-PARAMS is the
-parameters to the code block.")
+Each function is called with two parameters, BODY is the text of
+the SQL statements to be run.  PROCESSED-PARAMS is the parameters
+to the code block.
+
+The hook should return a new BODY modified in some way.")
 
 (add-to-list 'org-babel-tangle-lang-exts '("sql-mode" . "sql"))
 
@@ -195,26 +197,27 @@ parameters to the code block.")
   (let* ((processed-params (org-babel-process-params params))
          (session (cdr (assoc :session processed-params)))
          (session-proc (org-babel-sql-mode-initiate-session session processed-params))
-         (statements
-          (mapcar (lambda (c) (format "%s;" c))
-                  (split-string
-		   (string-trim-right
-                    ;; Replace newlines with spaces
-                    (replace-regexp-in-string
-                     "\n" " "
-                     ;; Remove comments, as the query is going to be
-                     ;; flattened to one line.
-                     (replace-regexp-in-string "[[:space:]]*--.*$" "" body)))
-                   ";" t "[[:space:]\r\n]+"))))
+         (sql-product (intern (cdr (assoc :product params))))
+         (sql-prompt-regexp (sql-get-product-feature sql-product :prompt-regexp))
+         (sql-prompt-cont-regexp (sql-get-product-feature sql-product :prompt-cont-regexp)))
     (with-temp-buffer
-      (let ((adjusted-statements (run-hook-with-args-until-success
-                                  'org-babel-sql-mode-pre-execute-hook
-                                  statements processed-params)))
-        (when adjusted-statements
-          (setq statements adjusted-statements)))
-      (sql-redirect session-proc statements (buffer-name) nil)
+      (let ((adjusted-body (run-hook-with-args-until-success
+                            'org-babel-sql-mode-pre-execute-hook
+                            body processed-params)))
+        (when adjusted-body
+          (setq body adjusted-body)))
+      (sql-redirect session-proc body (buffer-name) nil)
       (run-hooks 'org-babel-sql-mode-post-execute-hook)
-      (buffer-string))))
+      ;; The output may contain the prompt or (more likely) the continuation
+      ;; prompt. Search for both and remove them.
+      (save-match-data
+	(goto-char (point-min))
+	(while (re-search-forward sql-prompt-regexp nil t)
+	  (replace-match "")))
+	(goto-char (point-min))
+	(while (re-search-forward sql-prompt-cont-regexp nil t)
+	  (replace-match ""))
+	(buffer-string))))
 
 (defun org-babel-sql-mode-initiate-session (&optional session _params)
   "Return the comint buffer for this `SESSION'.
