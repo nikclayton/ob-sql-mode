@@ -183,13 +183,22 @@ The hook should return a new BODY modified in some way.")
 
 (add-to-list 'org-babel-tangle-lang-exts '("sql-mode" . "sql"))
 
-(eval-after-load "org"
-  '(progn
-     (add-to-list 'org-src-lang-modes '("sql-mode" . sql))
-     (add-to-list 'org-structure-template-alist
-                  `(,org-babel-sql-mode-template-selector
-                    "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"
-                    "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"))))
+(with-eval-after-load "org"
+  (add-to-list 'org-src-lang-modes '("sql-mode" . sql))
+  (let* ((split-version (split-string org-version "\\."))
+	 (org-major (string-to-number (nth 0 split-version)))
+	 (org-minor (string-to-number (nth 1 split-version))))
+    (if (or (and (= org-major 9)
+		 (< org-minor 2))
+	    (< org-major 9))
+	(add-to-list 'org-structure-template-alist
+		     `(,org-babel-sql-mode-template-selector
+                       "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"
+                       "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"))
+      (add-to-list 'org-structure-template-alist
+		   `(,org-babel-sql-mode-template-selector
+		     . "src sql-mode")))))
+
 
 ;; On Windows systems the "-interactive" option is required, otherwise
 ;; output is buffered and Emacs never sees the prompt. See
