@@ -57,7 +57,7 @@ To guard against security risks, Org defaults to prompting for
 confirmation every time you evaluate a code block
 (see
 [Code evaluation and security issues](http://orgmode.org/manual/Code-evaluation-security.html) for
-details). To disable this for `ob-sql-mode` blocks you can add enter and
+details). To disable this for `ob-sql-mode` blocks you can enter and
 evaluate the following.
 
 ``` lisp
