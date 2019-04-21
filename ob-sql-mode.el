@@ -191,6 +191,12 @@ The hook should return a new BODY modified in some way.")
                     "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"
                     "#+BEGIN_SRC sql-mode ?\n\n#+END_SRC"))))
 
+;; On Windows systems the "-interactive" option is required, otherwise
+;; output is buffered and Emacs never sees the prompt. See
+;; https://write.as/nikclayton/missing-prompt-issues-with-sql-mode-and-sqlite-on-windows
+(with-eval-after-load "sql"
+  (if (eq system-type 'windows-nt)
+      (add-to-list 'sql-sqlite-options "-interactive")))
 
 (defun org-babel-execute:sql-mode (body params)
   "Execute the SQL statements in BODY using PARAMS."
