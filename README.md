@@ -102,7 +102,7 @@ this add a `:session` header argument with a name for the session. Blocks that
 share a session name will be run in the same session.
 
 Per
-[Using header arguments](http://orgmode.org/manual/Using-header-arguments.html#Using-header-arguments) in
+[Using header arguments](https://orgmode.org/manual/Using-Header-Arguments.html) in
 the Org manual you can set these on a per-file level with the
 following syntax:
 
