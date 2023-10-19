@@ -267,5 +267,18 @@ keys in `PARAMS', but do not depend on this."
   (format "%s:%s" (cdr (assoc :product params))
           (cdr (assoc :session params))))
 
+;; Configure ob-sql-mode editing source block buffer with the header argument
+;; `:product' specified database product corresponding sql-mode product
+;; `sql-product' on [C-c '] `org-edit-special' -> `org-edit-src-code' ->
+;; `org-babel-edit-prep:sql'.
+(defun org-babel-edit-prep:sql-mode (info)
+  "Set `sql-product' in Org edit source block buffer.
+ Set `sql-product' in Org edit buffer according to the
+corresponding :product source block header argument."
+  (let ((product (cdr (assq :product (nth 2 info)))))
+    (condition-case nil
+        (sql-set-product product)
+      (user-error "Cannot set `sql-product' in Org Src edit buffer"))))
+
 (provide 'ob-sql-mode)
 ;;; ob-sql-mode.el ends here
