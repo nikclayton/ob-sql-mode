@@ -117,8 +117,8 @@ a properties drawer to the heading with the following syntax:
 ``` org
 ** TODO Perform some queries to investigate some data
 :PROPERTIES:
-:header-args:sql-mode :product sqlite
-:header-args:sql-mode+ :session session-name
+:header-args:sql-mode: :product sqlite
+:header-args:sql-mode+: :session session-name
 :END:
 
 #+BEGIN_SRC sql-mode
