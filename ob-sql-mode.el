@@ -214,7 +214,18 @@ The hook should return a new BODY modified in some way.")
          (session-proc (org-babel-sql-mode-initiate-session session processed-params))
          (sql-product (intern (cdr (assoc :product params))))
          (sql-prompt-regexp (sql-get-product-feature sql-product :prompt-regexp))
-         (sql-prompt-cont-regexp (sql-get-product-feature sql-product :prompt-cont-regexp)))
+         (sql-prompt-cont-regexp (sql-get-product-feature sql-product :prompt-cont-regexp))
+         (filter  (sql-get-product-feature sql-product :input-filter)))
+     ;; Apply filter(s)
+    (cond
+     ((not filter)
+      nil)
+     ((functionp filter)
+      (setq body (funcall filter body)))
+     ((listp filter)
+      (mapc (lambda (f) (setq body (funcall f body))) filter))
+     (t nil))
+
     (with-temp-buffer
       (let ((adjusted-body (run-hook-with-args-until-success
                             'org-babel-sql-mode-pre-execute-hook
